@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Churn Predictor</title>
+    <!-- Use Google Fonts for Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+        body {
+            /* High-end gradient background */
+            background: linear-gradient(135deg, #0f172a 0%, #17103a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #f8fafc;
+            padding: 40px 20px;
+        }
+        /* Glassmorphism container */
+        .container {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 50px;
+            width: 100%;
+            max-width: 900px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255,255,255,0.05);
+            animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.75rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #60a5fa, #d8b4fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+        p.subtitle {
+            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 45px;
+            font-size: 1.15rem;
+            font-weight: 300;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        input, select {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 14px 16px;
+            border-radius: 12px;
+            color: #f8fafc;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            appearance: none; /* Removes default dropdown arrow to style better if wanted, but fine to keep for broad support */
+        }
+        input:focus, select:focus {
+            border-color: #a78bfa;
+            box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.15);
+            background: rgba(15, 23, 42, 0.7);
+            transform: translateY(-1px);
+        }
+        /* Custom Down Arrow for Selects */
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1.2em;
+            padding-right: 2.5rem;
+        }
+        option {
+            background-color: #1e293b;
+            color: #fff;
+        }
+        .btn-submit {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 14px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 24px;
+            box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.4);
+            letter-spacing: 0.02em;
+        }
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 30px -5px rgba(124, 58, 237, 0.5);
+            filter: brightness(1.1);
+        }
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+        .result-card {
+            margin-top: 45px;
+            padding: 35px;
+            border-radius: 20px;
+            text-align: center;
+            animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        @keyframes bounceIn {
+            0% { opacity: 0; transform: scale(0.95) translateY(20px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .result-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: inherit;
+            filter: blur(20px);
+            opacity: 0.5;
+            z-index: -1;
+        }
+        .result-card.churn {
+            background: rgba(225, 29, 72, 0.15); /* Rose / Red */
+            border-color: rgba(225, 29, 72, 0.4);
+            box-shadow: 0 10px 30px -5px rgba(225, 29, 72, 0.2);
+        }
+        .result-card.no-churn {
+            background: rgba(16, 185, 129, 0.15); /* Emerald / Green */
+            border-color: rgba(16, 185, 129, 0.4);
+            box-shadow: 0 10px 30px -5px rgba(16, 185, 129, 0.2);
+        }
+        .result-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+        .churn .result-title { color: #fda4af; }
+        .no-churn .result-title { color: #6ee7b7; }
+        
+        .result-prob {
+            font-size: 1.2rem;
+            color: #e2e8f0;
+            font-weight: 400;
+        }
+        .result-prob strong {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+        .churn .result-prob strong { color: #fda4af; }
+        .no-churn .result-prob strong { color: #6ee7b7; }
+
+        .error {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            font-weight: 500;
+        }
+        
+        /* Loading spinner */
+        .btn-submit.loading {
+            position: relative;
+            color: transparent;
+            pointer-events: none;
+        }
+        .btn-submit.loading::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 26px;
+            height: 26px;
+            margin-left: -13px;
+            margin-top: -13px;
+            border: 3px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Customer Churn AI</h1>
+        <p class="subtitle">Enter customer details below to dynamically predict their probability of churning.</p>
+        
+        {% if error %}
+        <div class="error">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form action="/predict" method="POST" id="predictForm">
+            <div class="grid">
+                {% for feature in features %}
+                <div class="form-group">
+                    <!-- Clean up CamelCase for labels -->
+                    <label for="{{ feature }}">{{ feature | replace('([a-z])([A-Z])', '\\1 \\2') | title }}</label>
+                    {% if feature in encoders %}
+                        <select id="{{ feature }}" name="{{ feature }}" required>
+                            <option value="" disabled selected>Select {{ feature }}</option>
+                            {% for cls in encoders[feature] %}
+                                <option value="{{ cls }}">{{ cls }}</option>
+                            {% endfor %}
+                        </select>
+                    {% else %}
+                        <input type="number" step="any" id="{{ feature }}" name="{{ feature }}" placeholder="Enter {{ feature }}" required>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn-submit" id="submitBtn">Predict Churn Risk</button>
+            </div>
+        </form>
+
+        {% if prediction %}
+        <div class="result-card {% if 'No' in prediction %}no-churn{% else %}churn{% endif %}">
+            <div class="result-title">{{ prediction }}</div>
+            <div class="result-prob">Calculated Probability of Churn: <strong>{{ probability }}</strong></div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        document.getElementById('predictForm').addEventListener('submit', function() {
+            var btn = document.getElementById('submitBtn');
+            btn.classList.add('loading');
+        });
+    </script>
+</body>
+</html>
