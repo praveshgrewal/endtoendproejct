@@ -1,0 +1,43 @@
+# Virtual Environments (Local & Azure)
+venv/
+env/
+.venv/
+antenv/
+
+# Azure Specific
+.azure/
+.python_packages/
+.deployment
+__blob_storage__/
+
+# Build Artifacts & Logs
+*.zip
+*.tar.gz
+*.log
+
+# IDEs and Text Editors
+.vscode/
+.idea/
+
+# Environment Variables
+.env
+
+# Python Cache & Compiled Files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Datasets
+*.csv
+# If you want to keep customer_churn.csv in Git, remove the line above!
+
+# Trained Machine Learning Models & Dependencies
+*.pkl
+encoders.json
+# (If you prefer pre-trained models bundled in the repo, remove these lines)
+
+# OS Specific
+.DS_Store
+Thumbs.db
